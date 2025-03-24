@@ -1,2 +1,2 @@
 # robotoop
-Robot-application isung oop-concept and Swing 
+Robot-application using oop-concept and Swing 
