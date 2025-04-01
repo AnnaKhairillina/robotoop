@@ -3,11 +3,13 @@ package gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.Locale;
 
 import log.Logger;
 
 public class MainApplicationFrame extends JFrame {
     public static void main(String[] args) {
+        Locale.setDefault(new Locale("ru", "RU"));
         SwingUtilities.invokeLater(() -> {
             MainApplicationFrame frame = new MainApplicationFrame();
             frame.setVisible(true);
