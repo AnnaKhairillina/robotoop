@@ -3,6 +3,8 @@ package gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Locale;
 
 import log.Logger;
@@ -17,13 +19,37 @@ public class MainApplicationFrame extends JFrame {
     }
 
     private final JDesktopPane desktopPane = new JDesktopPane();
+    private LogWindow logWindow;
+    private GameWindow gameWindow;
 
     public MainApplicationFrame() {
         initLocalization();
         setupWindow();
         createAndAddWindows();
         setJMenuBar(generateMenuBar());
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                saveStateAndExit();
+            }
+        });
+
+        WindowStateManager.restoreMainFrameState(this);
+    }
+
+    private void saveStateAndExit() {
+        for (JInternalFrame frame : desktopPane.getAllFrames()) {
+            if (frame instanceof LogWindow) {
+                WindowStateManager.saveWindowState(frame, "logWindow");
+            } else if (frame instanceof GameWindow) {
+                WindowStateManager.saveWindowState(frame, "gameWindow");
+            }
+        }
+
+        WindowStateManager.saveMainFrameState(this);
+        confirmExit();
     }
 
     private void setupWindow() {
@@ -38,10 +64,12 @@ public class MainApplicationFrame extends JFrame {
     private void createAndAddWindows() {
         LogWindow logWindow = createLogWindow();
         addWindow(logWindow);
+        WindowStateManager.restoreWindowState(logWindow, "logWindow");
 
         GameWindow gameWindow = new GameWindow();
         gameWindow.setSize(400, 400);
         addWindow(gameWindow);
+        WindowStateManager.restoreWindowState(gameWindow, "gameWindow");
     }
 
     private void initLocalization() {
@@ -105,7 +133,7 @@ public class MainApplicationFrame extends JFrame {
         menu.setMnemonic(KeyEvent.VK_F);
 
         JMenuItem exitItem = new JMenuItem("Выход", KeyEvent.VK_Q);
-        exitItem.addActionListener(e -> confirmExit());
+        exitItem.addActionListener(e -> saveStateAndExit());
 
         menu.add(exitItem);
         return menu;
