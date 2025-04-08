@@ -118,9 +118,11 @@ public class MainApplicationFrame extends JFrame {
         );
 
         if (result == JOptionPane.YES_OPTION) {
-            System.exit(0);
+            setVisible(false);
+            dispose();
         }
     }
+
 
     private void setLookAndFeel(String className) {
         try {
