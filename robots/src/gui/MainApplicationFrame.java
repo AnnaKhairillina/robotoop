@@ -17,7 +17,7 @@ public class MainApplicationFrame extends JFrame {
     }
 
     private final JDesktopPane desktopPane = new JDesktopPane();
-
+//fff
     public MainApplicationFrame() {
         initLocalization();
         setupWindow();
