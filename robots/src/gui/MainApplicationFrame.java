@@ -17,7 +17,7 @@ public class MainApplicationFrame extends JFrame {
     }
 
     private final JDesktopPane desktopPane = new JDesktopPane();
-//fff
+
     public MainApplicationFrame() {
         initLocalization();
         setupWindow();
@@ -39,10 +39,17 @@ public class MainApplicationFrame extends JFrame {
         LogWindow logWindow = createLogWindow();
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow();
+        RobotModel model = new RobotModel();
+
+        GameWindow gameWindow = new GameWindow(model);
         gameWindow.setSize(400, 400);
         addWindow(gameWindow);
+
+        RobotPositionWindow positionWindow = new RobotPositionWindow(model);
+        positionWindow.setLocation(420, 10);
+        addWindow(positionWindow);
     }
+
 
     private void initLocalization() {
         UIManager.put("OptionPane.yesButtonText", "Да");

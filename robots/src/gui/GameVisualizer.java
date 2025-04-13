@@ -31,33 +31,18 @@ public class GameVisualizer extends JPanel
     private volatile int m_targetPositionY = 100;
     
     private static final double maxVelocity = 0.1; 
-    private static final double maxAngularVelocity = 0.001; 
-    
-    public GameVisualizer() 
-    {
-        m_timer.schedule(new TimerTask()
-        {
+    private static final double maxAngularVelocity = 0.001;
+
+    private final RobotModel model;
+
+    public GameVisualizer(RobotModel model) {
+        this.model = model;
+        model.addObserver((o, arg) -> repaint());
+
+        addMouseListener(new MouseAdapter() {
             @Override
-            public void run()
-            {
-                onRedrawEvent();
-            }
-        }, 0, 50);
-        m_timer.schedule(new TimerTask()
-        {
-            @Override
-            public void run()
-            {
-                onModelUpdateEvent();
-            }
-        }, 0, 10);
-        addMouseListener(new MouseAdapter()
-        {
-            @Override
-            public void mouseClicked(MouseEvent e)
-            {
-                setTargetPosition(e.getPoint());
-                repaint();
+            public void mouseClicked(MouseEvent e) {
+                model.setTarget(e.getX(), e.getY());
             }
         });
         setDoubleBuffered(true);
