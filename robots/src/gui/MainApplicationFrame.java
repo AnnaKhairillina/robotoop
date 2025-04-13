@@ -40,14 +40,12 @@ public class MainApplicationFrame extends JFrame {
         addWindow(logWindow);
 
         RobotModel model = new RobotModel();
-
         GameWindow gameWindow = new GameWindow(model);
-        gameWindow.setSize(400, 400);
         addWindow(gameWindow);
 
-        RobotPositionWindow positionWindow = new RobotPositionWindow(model);
-        positionWindow.setLocation(420, 10);
-        addWindow(positionWindow);
+        CoordinatesWindow coordsWindow = new CoordinatesWindow(model);
+        coordsWindow.setLocation(420, 10);
+        addWindow(coordsWindow);
     }
 
 
