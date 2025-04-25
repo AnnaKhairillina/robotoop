@@ -46,19 +46,16 @@ public class MainApplicationFrame extends StatefulWindow {
     private void createAndAddWindows() {
         Map<String, Map<String, String>> savedStates = WindowStateManager.loadStates();
 
-        // Восстанавливаем состояние главного окна
         if (savedStates.containsKey("mainWindow")) {
             restoreState(savedStates.get("mainWindow"));
         }
 
-        // Создаем и настраиваем окно лога
         LogWindow logWindow = createLogWindow();
         if (savedStates.containsKey("logWindow")) {
             logWindow.restoreState(savedStates.get("logWindow"));
         }
         addWindow(logWindow);
 
-        // Создаем и настраиваем игровое окно
         GameWindow gameWindow = new GameWindow();
         if (savedStates.containsKey("gameWindow")) {
             gameWindow.restoreState(savedStates.get("gameWindow"));
@@ -103,7 +100,6 @@ public class MainApplicationFrame extends StatefulWindow {
         return desktopPane;
     }
 
-    // Остальные методы остаются без изменений
     private void initLocalization() {
         UIManager.put("OptionPane.yesButtonText", "Да");
         UIManager.put("OptionPane.noButtonText", "Нет");

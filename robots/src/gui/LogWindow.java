@@ -30,7 +30,6 @@ public class LogWindow extends StatefulInternalFrame implements LogChangeListene
         pack();
         updateLogContent();
 
-        // Устанавливаем начальные размеры и положение
         setSize(300, 800);
         setLocation(10, 10);
     }
@@ -55,13 +54,11 @@ public class LogWindow extends StatefulInternalFrame implements LogChangeListene
     @Override
     public Map<String, String> getWindowState() {
         Map<String, String> state = super.getWindowState();
-        // Можно добавить дополнительные параметры, специфичные для LogWindow
         return state;
     }
 
     @Override
     public void restoreState(Map<String, String> state) {
         super.restoreState(state);
-        // Можно добавить восстановление дополнительных параметров
     }
 }

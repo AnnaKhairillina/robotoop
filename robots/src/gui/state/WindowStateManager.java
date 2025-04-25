@@ -14,13 +14,10 @@ public class WindowStateManager {
 
     public static void saveStates(MainApplicationFrame mainFrame) {
         Properties props = new Properties();
-
-        // Сохраняем состояние главного окна
         Map<String, String> mainState = mainFrame.getWindowState();
         mainState.forEach((key, value) ->
                 props.setProperty(MAIN_WINDOW_KEY + "." + key, value));
 
-        // Сохраняем состояния внутренних окон
         for (JInternalFrame frame : mainFrame.getDesktopPane().getAllFrames()) {
             if (frame instanceof Stateful) {
                 String windowId = frame instanceof LogWindow ? "logWindow" :
@@ -45,7 +42,6 @@ public class WindowStateManager {
         try (InputStream in = new FileInputStream(CONFIG_PATH)) {
             props.load(in);
 
-            // Группируем свойства по идентификаторам окон
             props.stringPropertyNames().forEach(key -> {
                 String[] parts = key.split("\\.", 2);
                 if (parts.length == 2) {
