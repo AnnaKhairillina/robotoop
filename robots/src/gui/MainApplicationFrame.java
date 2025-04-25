@@ -3,13 +3,15 @@ package gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.Locale;
+import java.util.*;
 
+import gui.state.StatefulWindow;
+import gui.state.WindowStateManager;
 import log.Logger;
 
-public class MainApplicationFrame extends JFrame {
+public class MainApplicationFrame extends StatefulWindow {
+    private final JDesktopPane desktopPane = new JDesktopPane();
+
     public static void main(String[] args) {
         Locale.setDefault(new Locale("ru", "RU"));
         SwingUtilities.invokeLater(() -> {
@@ -18,38 +20,18 @@ public class MainApplicationFrame extends JFrame {
         });
     }
 
-    private final JDesktopPane desktopPane = new JDesktopPane();
-    private LogWindow logWindow;
-    private GameWindow gameWindow;
-
     public MainApplicationFrame() {
         initLocalization();
         setupWindow();
         createAndAddWindows();
         setJMenuBar(generateMenuBar());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-
-        addWindowListener(new WindowAdapter() {
+        addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent e) {
-                saveStateAndExit();
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                confirmExit();
             }
         });
-
-        WindowStateManager.restoreMainFrameState(this);
-    }
-
-    private void saveStateAndExit() {
-        for (JInternalFrame frame : desktopPane.getAllFrames()) {
-            if (frame instanceof LogWindow) {
-                WindowStateManager.saveWindowState(frame, "logWindow");
-            } else if (frame instanceof GameWindow) {
-                WindowStateManager.saveWindowState(frame, "gameWindow");
-            }
-        }
-
-        WindowStateManager.saveMainFrameState(this);
-        confirmExit();
     }
 
     private void setupWindow() {
@@ -62,21 +44,30 @@ public class MainApplicationFrame extends JFrame {
     }
 
     private void createAndAddWindows() {
-        LogWindow logWindow = createLogWindow();
-        addWindow(logWindow);
-        WindowStateManager.restoreWindowState(logWindow, "logWindow");
+        Map<String, Map<String, String>> savedStates = WindowStateManager.loadStates();
 
+        // Восстанавливаем состояние главного окна
+        if (savedStates.containsKey("mainWindow")) {
+            restoreState(savedStates.get("mainWindow"));
+        }
+
+        // Создаем и настраиваем окно лога
+        LogWindow logWindow = createLogWindow();
+        if (savedStates.containsKey("logWindow")) {
+            logWindow.restoreState(savedStates.get("logWindow"));
+        }
+        addWindow(logWindow);
+
+        // Создаем и настраиваем игровое окно
         GameWindow gameWindow = new GameWindow();
-        gameWindow.setSize(400, 400);
+        if (savedStates.containsKey("gameWindow")) {
+            gameWindow.restoreState(savedStates.get("gameWindow"));
+        }
         addWindow(gameWindow);
-        WindowStateManager.restoreWindowState(gameWindow, "gameWindow");
     }
 
-    private void initLocalization() {
-        UIManager.put("OptionPane.yesButtonText", "Да");
-        UIManager.put("OptionPane.noButtonText", "Нет");
-        UIManager.put("OptionPane.okButtonText", "ОК");
-        UIManager.put("OptionPane.cancelButtonText", "Отмена");
+    private void saveWindowStates() {
+        WindowStateManager.saveStates(this);
     }
 
     protected LogWindow createLogWindow() {
@@ -92,6 +83,32 @@ public class MainApplicationFrame extends JFrame {
     protected void addWindow(JInternalFrame frame) {
         desktopPane.add(frame);
         frame.setVisible(true);
+    }
+
+    private void confirmExit() {
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                "Вы уверены, что хотите выйти?",
+                "Подтверждение",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (result == JOptionPane.YES_OPTION) {
+            saveWindowStates(); // Сохраняем состояния перед выходом
+            System.exit(0);
+        }
+    }
+
+    public JDesktopPane getDesktopPane() {
+        return desktopPane;
+    }
+
+    // Остальные методы остаются без изменений
+    private void initLocalization() {
+        UIManager.put("OptionPane.yesButtonText", "Да");
+        UIManager.put("OptionPane.noButtonText", "Нет");
+        UIManager.put("OptionPane.okButtonText", "ОК");
+        UIManager.put("OptionPane.cancelButtonText", "Отмена");
     }
 
     private JMenuBar generateMenuBar() {
@@ -133,23 +150,10 @@ public class MainApplicationFrame extends JFrame {
         menu.setMnemonic(KeyEvent.VK_F);
 
         JMenuItem exitItem = new JMenuItem("Выход", KeyEvent.VK_Q);
-        exitItem.addActionListener(e -> saveStateAndExit());
+        exitItem.addActionListener(e -> confirmExit());
 
         menu.add(exitItem);
         return menu;
-    }
-
-    private void confirmExit() {
-        int result = JOptionPane.showConfirmDialog(
-                this,
-                "Вы уверены, что хотите выйти?",
-                "Подтверждение",
-                JOptionPane.YES_NO_OPTION
-        );
-
-        if (result == JOptionPane.YES_OPTION) {
-            System.exit(0);
-        }
     }
 
     private void setLookAndFeel(String className) {
@@ -158,6 +162,7 @@ public class MainApplicationFrame extends JFrame {
             SwingUtilities.updateComponentTreeUI(this);
         } catch (ClassNotFoundException | InstantiationException |
                  IllegalAccessException | UnsupportedLookAndFeelException e) {
+            Logger.error("Ошибка при смене стиля: " + e.getMessage());
         }
     }
 }
