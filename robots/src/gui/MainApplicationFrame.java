@@ -3,25 +3,36 @@ package gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.Locale;
+import java.util.Map;
 
+import gui.state.StatefulWindow;
+import gui.state.WindowStateManager;
 import log.Logger;
 
-public class MainApplicationFrame extends JFrame {
+public class MainApplicationFrame extends StatefulWindow {
+    private final JDesktopPane desktopPane = new JDesktopPane();
+
     public static void main(String[] args) {
+        Locale.setDefault(new Locale("ru", "RU"));
         SwingUtilities.invokeLater(() -> {
             MainApplicationFrame frame = new MainApplicationFrame();
             frame.setVisible(true);
         });
     }
 
-    private final JDesktopPane desktopPane = new JDesktopPane();
-
     public MainApplicationFrame() {
         initLocalization();
         setupWindow();
         createAndAddWindows();
         setJMenuBar(generateMenuBar());
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                confirmExit();
+            }
+        });
     }
 
     private void setupWindow() {
@@ -34,19 +45,35 @@ public class MainApplicationFrame extends JFrame {
     }
 
     private void createAndAddWindows() {
+        Map<String, Map<String, String>> savedStates = WindowStateManager.loadStates();
+
+        if (savedStates.containsKey("mainWindow")) {
+            restoreState(savedStates.get("mainWindow"));
+        }
+
+        RobotModel model = new RobotModel();
+
         LogWindow logWindow = createLogWindow();
+        if (savedStates.containsKey("logWindow")) {
+            logWindow.restoreState(savedStates.get("logWindow"));
+        }
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow();
-        gameWindow.setSize(400, 400);
+        GameWindow gameWindow = new GameWindow(model);
+        if (savedStates.containsKey("gameWindow")) {
+            gameWindow.restoreState(savedStates.get("gameWindow"));
+        }
         addWindow(gameWindow);
+
+        CoordinatesWindow coordsWindow = new CoordinatesWindow(model);
+        if (savedStates.containsKey("coordinatesWindow")) {
+            coordsWindow.restoreState(savedStates.get("coordinatesWindow"));
+        }
+        addWindow(coordsWindow);
     }
 
-    private void initLocalization() {
-        UIManager.put("OptionPane.yesButtonText", "Да");
-        UIManager.put("OptionPane.noButtonText", "Нет");
-        UIManager.put("OptionPane.okButtonText", "ОК");
-        UIManager.put("OptionPane.cancelButtonText", "Отмена");
+    private void saveWindowStates() {
+        WindowStateManager.saveStates(this);
     }
 
     protected LogWindow createLogWindow() {
@@ -62,6 +89,32 @@ public class MainApplicationFrame extends JFrame {
     protected void addWindow(JInternalFrame frame) {
         desktopPane.add(frame);
         frame.setVisible(true);
+    }
+
+    private void confirmExit() {
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            "Вы уверены, что хотите выйти?",
+            "Подтверждение",
+            JOptionPane.YES_NO_OPTION
+        );
+
+        if (result == JOptionPane.YES_OPTION) {
+            saveWindowStates(); 
+            setVisible(false);
+            dispose();
+        }
+    }
+
+    public JDesktopPane getDesktopPane() {
+        return desktopPane;
+    }
+
+    private void initLocalization() {
+        UIManager.put("OptionPane.yesButtonText", "Да");
+        UIManager.put("OptionPane.noButtonText", "Нет");
+        UIManager.put("OptionPane.okButtonText", "ОК");
+        UIManager.put("OptionPane.cancelButtonText", "Отмена");
     }
 
     private JMenuBar generateMenuBar() {
@@ -109,28 +162,13 @@ public class MainApplicationFrame extends JFrame {
         return menu;
     }
 
-    private void confirmExit() {
-        int result = JOptionPane.showConfirmDialog(
-                this,
-                "Вы уверены, что хотите выйти?",
-                "Подтверждение",
-                JOptionPane.YES_NO_OPTION
-        );
-
-        if (result == JOptionPane.YES_OPTION) {
-            setVisible(false);
-            dispose();
-        }
-    }
-
-
     private void setLookAndFeel(String className) {
         try {
             UIManager.setLookAndFeel(className);
             SwingUtilities.updateComponentTreeUI(this);
         } catch (ClassNotFoundException | InstantiationException |
                  IllegalAccessException | UnsupportedLookAndFeelException e) {
+            Logger.error("Ошибка при смене стиля: " + e.getMessage());
         }
     }
 }
-///fff
