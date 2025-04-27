@@ -93,15 +93,16 @@ public class MainApplicationFrame extends StatefulWindow {
 
     private void confirmExit() {
         int result = JOptionPane.showConfirmDialog(
-                this,
-                "Вы уверены, что хотите выйти?",
-                "Подтверждение",
-                JOptionPane.YES_NO_OPTION
+            this,
+            "Вы уверены, что хотите выйти?",
+            "Подтверждение",
+            JOptionPane.YES_NO_OPTION
         );
 
         if (result == JOptionPane.YES_OPTION) {
-            saveWindowStates();
-            System.exit(0);
+            saveWindowStates(); 
+            setVisible(false);
+            dispose();
         }
     }
 
