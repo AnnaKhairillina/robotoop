@@ -3,7 +3,8 @@ package gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.*;
+import java.util.Locale;
+import java.util.Map;
 
 import gui.state.StatefulWindow;
 import gui.state.WindowStateManager;
@@ -20,7 +21,6 @@ public class MainApplicationFrame extends StatefulWindow {
         });
     }
 
-    private final JDesktopPane desktopPane = new JDesktopPane();
     public MainApplicationFrame() {
         initLocalization();
         setupWindow();
@@ -51,17 +51,25 @@ public class MainApplicationFrame extends StatefulWindow {
             restoreState(savedStates.get("mainWindow"));
         }
 
+        RobotModel model = new RobotModel();
+
         LogWindow logWindow = createLogWindow();
         if (savedStates.containsKey("logWindow")) {
             logWindow.restoreState(savedStates.get("logWindow"));
         }
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow();
+        GameWindow gameWindow = new GameWindow(model);
         if (savedStates.containsKey("gameWindow")) {
             gameWindow.restoreState(savedStates.get("gameWindow"));
         }
         addWindow(gameWindow);
+
+        CoordinatesWindow coordsWindow = new CoordinatesWindow(model);
+        if (savedStates.containsKey("coordinatesWindow")) {
+            coordsWindow.restoreState(savedStates.get("coordinatesWindow"));
+        }
+        addWindow(coordsWindow);
     }
 
     private void saveWindowStates() {
@@ -92,7 +100,7 @@ public class MainApplicationFrame extends StatefulWindow {
         );
 
         if (result == JOptionPane.YES_OPTION) {
-            saveWindowStates(); // Сохраняем состояния перед выходом
+            saveWindowStates();
             System.exit(0);
         }
     }
