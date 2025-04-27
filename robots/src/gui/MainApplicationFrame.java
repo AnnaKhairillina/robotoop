@@ -3,6 +3,7 @@ package gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 
@@ -51,7 +52,10 @@ public class MainApplicationFrame extends StatefulWindow {
             restoreState(savedStates.get("mainWindow"));
         }
 
-        RobotModel model = new RobotModel();
+        ArrayList<RobotModel> robots = new ArrayList<>();
+        robots.add(new RobotModel(new StraightToTargetStrategy(), 100, 100));
+        robots.add(new RobotModel(new AcceleratingStrategy(), 150, 150));
+        robots.add(new RobotModel(new ZigZagStrategy(), 200, 200));
 
         LogWindow logWindow = createLogWindow();
         if (savedStates.containsKey("logWindow")) {
@@ -59,13 +63,13 @@ public class MainApplicationFrame extends StatefulWindow {
         }
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow(model);
+        GameWindow gameWindow = new GameWindow(robots);
         if (savedStates.containsKey("gameWindow")) {
             gameWindow.restoreState(savedStates.get("gameWindow"));
         }
         addWindow(gameWindow);
 
-        CoordinatesWindow coordsWindow = new CoordinatesWindow(model);
+        CoordinatesWindow coordsWindow = new CoordinatesWindow(robots);
         if (savedStates.containsKey("coordinatesWindow")) {
             coordsWindow.restoreState(savedStates.get("coordinatesWindow"));
         }
