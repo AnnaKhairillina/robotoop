@@ -1,15 +1,16 @@
 package gui;
 
-import javax.swing.*;
+import gui.state.StatefulInternalFrame;
 import java.awt.*;
 import java.util.Observable;
 import java.util.Observer;
+import javax.swing.*;
 
-public class CoordinatesWindow extends JInternalFrame implements Observer {
+public class CoordinatesWindow extends StatefulInternalFrame implements Observer {
     private final JLabel coordinatesLabel = new JLabel();
 
     public CoordinatesWindow(RobotModel model) {
-        super("Координаты робота", true, true, true, true);
+        super("Координаты робота", true, true, true, true); // теперь вызываем конструктор StatefulInternalFrame
         model.addObserver(this);
 
         coordinatesLabel.setFont(new Font("Monospaced", Font.PLAIN, 14));
