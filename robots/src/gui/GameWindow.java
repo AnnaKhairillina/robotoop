@@ -1,16 +1,30 @@
 package gui;
 
-import gui.RobotModel;
-
+import gui.state.StatefulInternalFrame;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Map;
 
-public class GameWindow extends JInternalFrame {
+public class GameWindow extends StatefulInternalFrame {
+    private final GameVisualizer m_visualizer;
+
     public GameWindow(RobotModel model) {
         super("Игровое поле", true, true, true, true);
+        m_visualizer = new GameVisualizer(model);
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new GameVisualizer(model), BorderLayout.CENTER);
+        panel.add(m_visualizer, BorderLayout.CENTER);
         getContentPane().add(panel);
         setSize(400, 400);
+    }
+
+    @Override
+    public Map<String, String> getWindowState() {
+        Map<String, String> state = super.getWindowState();
+        return state;
+    }
+
+    @Override
+    public void restoreState(Map<String, String> state) {
+        super.restoreState(state);
     }
 }
