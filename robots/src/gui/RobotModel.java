@@ -8,19 +8,27 @@ public class RobotModel extends Observable {
     private volatile double direction = 0;
     private volatile int targetX = 150;
     private volatile int targetY = 100;
+    private volatile boolean hasTarget = false;
 
-    public static final double MAX_VELOCITY = 0.1;
-    public static final double MAX_ANGULAR_VELOCITY = 0.001;
+    public static final double MAX_VELOCITY = 5.0;
+    public static final double MAX_ANGULAR_VELOCITY = 0.05;
 
     public void update() {
-        double distance = distance(targetX, targetY, robotX, robotY);
-        if (distance < 0.5) return;
+        if (!hasTarget) return;
 
-        double velocity = MAX_VELOCITY;
+        double distance = distance(targetX, targetY, robotX, robotY);
+        if (distance < 0.5) {
+            hasTarget = false;
+            setChanged();
+            notifyObservers();
+            return;
+        }
+
+        double velocity = Math.min(MAX_VELOCITY, distance * 0.1);
         double angleToTarget = angleTo(robotX, robotY, targetX, targetY);
         double angularVelocity = calculateAngularVelocity(angleToTarget);
 
-        move(velocity, angularVelocity, 10);
+        move(velocity, angularVelocity, 0.1);
         setChanged();
         notifyObservers();
     }
@@ -28,6 +36,7 @@ public class RobotModel extends Observable {
     public void setTarget(int x, int y) {
         this.targetX = x;
         this.targetY = y;
+        this.hasTarget = true;
         setChanged();
         notifyObservers();
     }
@@ -35,32 +44,20 @@ public class RobotModel extends Observable {
     public double getX() { return robotX; }
     public double getY() { return robotY; }
     public double getDirection() { return direction; }
+    public int getTargetX() { return targetX; }
+    public int getTargetY() { return targetY; }
+    public boolean hasTarget() { return hasTarget; }
 
     private double calculateAngularVelocity(double angleToTarget) {
         double diff = angleToTarget - direction;
         diff = normalizeAngle(diff);
-        return Math.signum(diff) * MAX_ANGULAR_VELOCITY;
+        return diff * 0.1;
     }
 
     private void move(double velocity, double angularVelocity, double duration) {
-        velocity = clamp(velocity, 0, MAX_VELOCITY);
-        angularVelocity = clamp(angularVelocity, -MAX_ANGULAR_VELOCITY, MAX_ANGULAR_VELOCITY);
-
-        double newX = robotX + velocity / angularVelocity *
-                (Math.sin(direction + angularVelocity * duration) - Math.sin(direction));
-        if (!Double.isFinite(newX)) {
-            newX = robotX + velocity * duration * Math.cos(direction);
-        }
-
-        double newY = robotY - velocity / angularVelocity *
-                (Math.cos(direction + angularVelocity * duration) - Math.cos(direction));
-        if (!Double.isFinite(newY)) {
-            newY = robotY + velocity * duration * Math.sin(direction);
-        }
-
-        robotX = newX;
-        robotY = newY;
         direction = normalizeAngle(direction + angularVelocity * duration);
+        robotX += velocity * Math.cos(direction) * duration;
+        robotY += velocity * Math.sin(direction) * duration;
     }
 
     private static double distance(double x1, double y1, double x2, double y2) {
@@ -77,9 +74,5 @@ public class RobotModel extends Observable {
         while (angle < 0) angle += 2 * Math.PI;
         while (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
         return angle;
-    }
-
-    private static double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
     }
 }

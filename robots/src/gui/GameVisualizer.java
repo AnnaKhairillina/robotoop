@@ -1,6 +1,5 @@
 package gui;
 
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -39,6 +38,7 @@ public class GameVisualizer extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         drawRobot(g2d, model);
+        drawTarget(g2d, model);
     }
 
     private void drawRobot(Graphics2D g, RobotModel model) {
@@ -58,5 +58,19 @@ public class GameVisualizer extends JPanel {
         g.fillOval(x + 10, y - 2, 5, 5);
         g.setColor(Color.BLACK);
         g.drawOval(x + 10, y - 2, 5, 5);
+    }
+
+    private void drawTarget(Graphics2D g, RobotModel model) {
+        if (!model.hasTarget()) {
+            return;
+        }
+
+        g.setTransform(new AffineTransform());
+
+        int targetX = model.getTargetX();
+        int targetY = model.getTargetY();
+
+        g.setColor(Color.RED);
+        g.fillOval(targetX - 5, targetY - 5, 10, 10);
     }
 }
