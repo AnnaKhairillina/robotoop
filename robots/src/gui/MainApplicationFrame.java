@@ -20,6 +20,7 @@ public class MainApplicationFrame extends StatefulWindow {
         });
     }
 
+    private final JDesktopPane desktopPane = new JDesktopPane();
     public MainApplicationFrame() {
         initLocalization();
         setupWindow();
