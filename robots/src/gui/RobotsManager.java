@@ -1,6 +1,8 @@
 package gui;
 
 
+import gui.RobotModel.RobotModel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;

@@ -1,4 +1,4 @@
-package gui;
+package gui.RobotModel;
 
 
 import java.util.Observable;

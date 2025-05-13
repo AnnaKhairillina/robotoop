@@ -1,5 +1,7 @@
 package gui;
 
+import gui.RobotModel.RobotModel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;

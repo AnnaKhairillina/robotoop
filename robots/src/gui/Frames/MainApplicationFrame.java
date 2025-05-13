@@ -1,4 +1,4 @@
-package gui;
+package gui.Frames;
 
 import javax.swing.*;
 import java.awt.*;
@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 
+import gui.RobotModel.*;
 import gui.state.StatefulWindow;
 import gui.state.WindowStateManager;
 import log.Logger;
@@ -53,9 +54,10 @@ public class MainApplicationFrame extends StatefulWindow {
         }
 
         ArrayList<RobotModel> robots = new ArrayList<>();
-        robots.add(new RobotModel(new StraightToTargetStrategy(), 100, 100));
-        robots.add(new RobotModel(new AcceleratingStrategy(), 150, 150));
-        robots.add(new RobotModel(new ZigZagStrategy(), 200, 200));
+//        robots.add(new RobotModel(new StraightToTargetStrategy(), 100, 100));
+//        robots.add(new RobotModel(new AcceleratingStrategy(), 150, 150));
+//        robots.add(new RobotModel(new ZigZagStrategy(), 200, 200));
+        robots.add(new RobotModel(new GradientDescentStrategy(),250,250));
 
         LogWindow logWindow = createLogWindow();
         if (savedStates.containsKey("logWindow")) {
