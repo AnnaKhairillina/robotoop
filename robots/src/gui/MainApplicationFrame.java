@@ -3,13 +3,15 @@ package gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 
 import gui.state.StatefulWindow;
 import gui.state.WindowStateManager;
 import log.Logger;
+import strategy.AcceleratingStrategy;
+import strategy.StraightToTargetStrategy;
+import strategy.ZigZagStrategy;
 
 public class MainApplicationFrame extends StatefulWindow {
     private final JDesktopPane desktopPane = new JDesktopPane();
@@ -54,10 +56,7 @@ public class MainApplicationFrame extends StatefulWindow {
             restoreState(savedStates.get("mainWindow"));
         }
 
-//        ArrayList<RobotModel> robots = new ArrayList<>();
-//        robots.add(new RobotModel(new StraightToTargetStrategy(), 100, 100));
-//        robots.add(new RobotModel(new AcceleratingStrategy(), 150, 150));
-//        robots.add(new RobotModel(new ZigZagStrategy(), 200, 200));
+
         robotsManager.addRobot(new RobotModel(new StraightToTargetStrategy(), 100, 100));
         robotsManager.addRobot(new RobotModel(new AcceleratingStrategy(), 150, 150));
         robotsManager.addRobot(new RobotModel(new ZigZagStrategy(), 200, 200));
@@ -103,15 +102,15 @@ public class MainApplicationFrame extends StatefulWindow {
 
     private void confirmExit() {
         int result = JOptionPane.showConfirmDialog(
-            this,
-            "Вы уверены, что хотите выйти?",
-            "Подтверждение",
-            JOptionPane.YES_NO_OPTION
+                this,
+                "Вы уверены, что хотите выйти?",
+                "Подтверждение",
+                JOptionPane.YES_NO_OPTION
         );
 
         if (result == JOptionPane.YES_OPTION) {
             robotsManager.shutdown();
-            saveWindowStates(); 
+            saveWindowStates();
             setVisible(false);
             dispose();
         }

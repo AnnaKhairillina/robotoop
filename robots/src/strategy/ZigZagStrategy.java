@@ -1,4 +1,7 @@
-package gui;
+package strategy;
+
+import gui.RobotModel;
+import strategy.MovementStrategy;
 
 public class ZigZagStrategy implements MovementStrategy {
     private boolean zig = true;

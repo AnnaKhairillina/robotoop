@@ -1,6 +1,8 @@
 package gui;
 
 
+import strategy.MovementStrategy;
+
 import java.util.Observable;
 
 public class RobotModel extends Observable {
