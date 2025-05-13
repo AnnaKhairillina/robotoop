@@ -110,6 +110,7 @@ public class MainApplicationFrame extends StatefulWindow {
         );
 
         if (result == JOptionPane.YES_OPTION) {
+            robotsManager.shutdown();
             saveWindowStates(); 
             setVisible(false);
             dispose();
