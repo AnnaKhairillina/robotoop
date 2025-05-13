@@ -13,6 +13,8 @@ import log.Logger;
 
 public class MainApplicationFrame extends StatefulWindow {
     private final JDesktopPane desktopPane = new JDesktopPane();
+    private final RobotsManager robotsManager = new RobotsManager();
+
 
     public static void main(String[] args) {
         Locale.setDefault(new Locale("ru", "RU"));
@@ -52,10 +54,14 @@ public class MainApplicationFrame extends StatefulWindow {
             restoreState(savedStates.get("mainWindow"));
         }
 
-        ArrayList<RobotModel> robots = new ArrayList<>();
-        robots.add(new RobotModel(new StraightToTargetStrategy(), 100, 100));
-        robots.add(new RobotModel(new AcceleratingStrategy(), 150, 150));
-        robots.add(new RobotModel(new ZigZagStrategy(), 200, 200));
+//        ArrayList<RobotModel> robots = new ArrayList<>();
+//        robots.add(new RobotModel(new StraightToTargetStrategy(), 100, 100));
+//        robots.add(new RobotModel(new AcceleratingStrategy(), 150, 150));
+//        robots.add(new RobotModel(new ZigZagStrategy(), 200, 200));
+        robotsManager.addRobot(new RobotModel(new StraightToTargetStrategy(), 100, 100));
+        robotsManager.addRobot(new RobotModel(new AcceleratingStrategy(), 150, 150));
+        robotsManager.addRobot(new RobotModel(new ZigZagStrategy(), 200, 200));
+
 
         LogWindow logWindow = createLogWindow();
         if (savedStates.containsKey("logWindow")) {
@@ -63,13 +69,13 @@ public class MainApplicationFrame extends StatefulWindow {
         }
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow(robots);
+        GameWindow gameWindow = new GameWindow(robotsManager);
         if (savedStates.containsKey("gameWindow")) {
             gameWindow.restoreState(savedStates.get("gameWindow"));
         }
         addWindow(gameWindow);
 
-        CoordinatesWindow coordsWindow = new CoordinatesWindow(robots);
+        CoordinatesWindow coordsWindow = new CoordinatesWindow(robotsManager);
         if (savedStates.containsKey("coordinatesWindow")) {
             coordsWindow.restoreState(savedStates.get("coordinatesWindow"));
         }

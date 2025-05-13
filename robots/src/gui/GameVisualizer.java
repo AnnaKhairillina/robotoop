@@ -5,26 +5,21 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class GameVisualizer extends JPanel {
-    private final List<RobotModel> robots;
+    private final RobotsManager robotsManager;
 
-    public GameVisualizer(ArrayList<RobotModel> robots) {
-        this.robots = robots;
+
+    public GameVisualizer(RobotsManager robotsManager) {
+        this.robotsManager = robotsManager;
 
         Timer timer = new Timer("robots_updater", true);
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                robots.parallelStream().forEach(robot -> {
-                    synchronized(robot) {
-                        robot.update(0.1);
-                    }
-                });
+                robotsManager.updateAll(0.1);
                 SwingUtilities.invokeLater(() -> repaint());
             }
         }, 0, 30);
@@ -32,9 +27,7 @@ public class GameVisualizer extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                for (RobotModel robot : robots) {
-                    robot.setTarget(e.getX(), e.getY());
-                }
+                robotsManager.setTargetForAll(e.getX(), e.getY());
             }
         });
         setDoubleBuffered(true);
@@ -44,12 +37,12 @@ public class GameVisualizer extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        for (RobotModel robot : robots) {
+        for (RobotModel robot : robotsManager.getRobots()) {
             drawRobot((Graphics2D) g, robot);
         }
 
-        if (!robots.isEmpty() && robots.get(0).hasTarget()) {
-            drawTarget((Graphics2D) g, robots.get(0));
+        if (!robotsManager.getRobots().isEmpty() && robotsManager.getRobots().get(0).hasTarget()) {
+            drawTarget((Graphics2D) g, robotsManager.getRobots().get(0));
         }
     }
 
