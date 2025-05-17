@@ -9,25 +9,25 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class GameVisualizer extends JPanel {
-    private final RobotModel model;
+    private final RobotsManager robotsManager;
 
-    public GameVisualizer(RobotModel model) {
-        this.model = model;
 
-        Timer timer = new Timer("model_updater", true);
+    public GameVisualizer(RobotsManager robotsManager) {
+        this.robotsManager = robotsManager;
+
+        Timer timer = new Timer("robots_updater", true);
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                model.update();
-                repaint();
+                robotsManager.updateAll(0.1);
+                SwingUtilities.invokeLater(() -> repaint());
             }
-        }, 0, 10);
+        }, 0, 30);
 
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                model.setTarget(e.getX(), e.getY());
-                repaint();
+                robotsManager.setTargetForAll(e.getX(), e.getY());
             }
         });
         setDoubleBuffered(true);
@@ -36,9 +36,14 @@ public class GameVisualizer extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g;
-        drawRobot(g2d, model);
-        drawTarget(g2d, model);
+
+        for (RobotModel robot : robotsManager.getRobots()) {
+            drawRobot((Graphics2D) g, robot);
+        }
+
+        if (!robotsManager.getRobots().isEmpty() && robotsManager.getRobots().get(0).hasTarget()) {
+            drawTarget((Graphics2D) g, robotsManager.getRobots().get(0));
+        }
     }
 
     private void drawRobot(Graphics2D g, RobotModel model) {
@@ -61,10 +66,7 @@ public class GameVisualizer extends JPanel {
     }
 
     private void drawTarget(Graphics2D g, RobotModel model) {
-        if (!model.hasTarget()) {
-            return;
-        }
-
+        if (!model.hasTarget()) return;
         g.setTransform(new AffineTransform());
 
         int targetX = model.getTargetX();

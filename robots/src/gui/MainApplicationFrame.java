@@ -9,9 +9,14 @@ import java.util.Map;
 import gui.state.StatefulWindow;
 import gui.state.WindowStateManager;
 import log.Logger;
+import strategy.AcceleratingStrategy;
+import strategy.StraightToTargetStrategy;
+import strategy.ZigZagStrategy;
 
 public class MainApplicationFrame extends StatefulWindow {
     private final JDesktopPane desktopPane = new JDesktopPane();
+    private final RobotsManager robotsManager = new RobotsManager();
+
 
     public static void main(String[] args) {
         Locale.setDefault(new Locale("ru", "RU"));
@@ -51,7 +56,11 @@ public class MainApplicationFrame extends StatefulWindow {
             restoreState(savedStates.get("mainWindow"));
         }
 
-        RobotModel model = new RobotModel();
+
+        robotsManager.addRobot(new RobotModel(new StraightToTargetStrategy(), 100, 100));
+        robotsManager.addRobot(new RobotModel(new AcceleratingStrategy(), 150, 150));
+        robotsManager.addRobot(new RobotModel(new ZigZagStrategy(), 200, 200));
+
 
         LogWindow logWindow = createLogWindow();
         if (savedStates.containsKey("logWindow")) {
@@ -59,13 +68,13 @@ public class MainApplicationFrame extends StatefulWindow {
         }
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow(model);
+        GameWindow gameWindow = new GameWindow(robotsManager);
         if (savedStates.containsKey("gameWindow")) {
             gameWindow.restoreState(savedStates.get("gameWindow"));
         }
         addWindow(gameWindow);
 
-        CoordinatesWindow coordsWindow = new CoordinatesWindow(model);
+        CoordinatesWindow coordsWindow = new CoordinatesWindow(robotsManager);
         if (savedStates.containsKey("coordinatesWindow")) {
             coordsWindow.restoreState(savedStates.get("coordinatesWindow"));
         }
@@ -93,14 +102,15 @@ public class MainApplicationFrame extends StatefulWindow {
 
     private void confirmExit() {
         int result = JOptionPane.showConfirmDialog(
-            this,
-            "Вы уверены, что хотите выйти?",
-            "Подтверждение",
-            JOptionPane.YES_NO_OPTION
+                this,
+                "Вы уверены, что хотите выйти?",
+                "Подтверждение",
+                JOptionPane.YES_NO_OPTION
         );
 
         if (result == JOptionPane.YES_OPTION) {
-            saveWindowStates(); 
+            robotsManager.shutdown();
+            saveWindowStates();
             setVisible(false);
             dispose();
         }
