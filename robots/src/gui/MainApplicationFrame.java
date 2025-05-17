@@ -26,6 +26,9 @@ public class MainApplicationFrame extends StatefulWindow {
         });
     }
 
+
+
+
     public MainApplicationFrame() {
         initLocalization();
         setupWindow();
@@ -56,30 +59,39 @@ public class MainApplicationFrame extends StatefulWindow {
             restoreState(savedStates.get("mainWindow"));
         }
 
-
+        // Добавляем роботов с разными стратегиями
         robotsManager.addRobot(new RobotModel(new StraightToTargetStrategy(), 100, 100));
-        robotsManager.addRobot(new RobotModel(new AcceleratingStrategy(), 150, 150));
-        robotsManager.addRobot(new RobotModel(new ZigZagStrategy(), 200, 200));
+        robotsManager.addRobot(new RobotModel(new AcceleratingStrategy(), 100, 100));
+        robotsManager.addRobot(new RobotModel(new ZigZagStrategy(), 100, 100));
 
+        // Устанавливаем первую случайную цель для всех роботов
+        robotsManager.setTargetForAll(
+                100 + new java.util.Random().nextInt(500),
+                100 + new java.util.Random().nextInt(300)
+        );
 
+        // Добавляем лог
         LogWindow logWindow = createLogWindow();
         if (savedStates.containsKey("logWindow")) {
             logWindow.restoreState(savedStates.get("logWindow"));
         }
         addWindow(logWindow);
 
+        // Добавляем игровое окно
         GameWindow gameWindow = new GameWindow(robotsManager);
         if (savedStates.containsKey("gameWindow")) {
             gameWindow.restoreState(savedStates.get("gameWindow"));
         }
         addWindow(gameWindow);
 
+        // Добавляем окно координат
         CoordinatesWindow coordsWindow = new CoordinatesWindow(robotsManager);
         if (savedStates.containsKey("coordinatesWindow")) {
             coordsWindow.restoreState(savedStates.get("coordinatesWindow"));
         }
         addWindow(coordsWindow);
     }
+
 
     private void saveWindowStates() {
         WindowStateManager.saveStates(this);
