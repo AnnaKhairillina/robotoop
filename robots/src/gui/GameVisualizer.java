@@ -36,6 +36,7 @@ public class GameVisualizer extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        robotsManager.setFieldSize(getWidth(), getHeight());
 
         for (RobotModel robot : robotsManager.getRobots()) {
             drawRobot((Graphics2D) g, robot);
