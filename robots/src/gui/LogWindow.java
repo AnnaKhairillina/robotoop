@@ -13,20 +13,22 @@ import log.LogWindowSource;
 
 public class LogWindow extends StatefulInternalFrame implements LogChangeListener
 {
-    private LogWindowSource m_logSource;
-    private TextArea m_logContent;
+    private final LogWindowSource m_logSource;
+    private final TextArea m_logContent;
 
     public LogWindow(LogWindowSource logSource)
     {
         super("Протокол работы", true, true, true, true);
-        m_logSource = logSource;
-        m_logSource.registerListener(this);
-        m_logContent = new TextArea("");
+        this.m_logSource = logSource;
+        this.m_logSource.registerListener(this);
+
+        this.m_logContent = new TextArea("");
         m_logContent.setSize(200, 500);
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(m_logContent, BorderLayout.CENTER);
         getContentPane().add(panel);
+
         pack();
         updateLogContent();
 
@@ -53,12 +55,18 @@ public class LogWindow extends StatefulInternalFrame implements LogChangeListene
 
     @Override
     public Map<String, String> getWindowState() {
-        Map<String, String> state = super.getWindowState();
-        return state;
+        return super.getWindowState();
     }
 
     @Override
     public void restoreState(Map<String, String> state) {
         super.restoreState(state);
+    }
+
+    @Override
+    public void dispose() {
+        // отписка от логов при закрытии окна
+        m_logSource.unregisterListener(this);
+        super.dispose();
     }
 }
