@@ -1,98 +1,138 @@
 package log;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class LogWindowSource
-{
-    private final int m_iQueueLength;
+public class LogWindowSource {
+    private final int queueLength;
+    private final LogEntry[] buffer;
+    private final AtomicInteger startIndex = new AtomicInteger(0);
+    private final AtomicInteger count = new AtomicInteger(0);
 
-    private final Deque<LogEntry> m_messages;
-    private final List<LogChangeListener> m_listeners;
-    private volatile LogChangeListener[] m_activeListeners;
+    private final List<LogChangeListener> listeners = new ArrayList<>();
+    private volatile LogChangeListener[] activeListeners;
 
-    public LogWindowSource(int iQueueLength)
-    {
-        this.m_iQueueLength = iQueueLength;
-        this.m_messages = new ArrayDeque<>(iQueueLength);
-        this.m_listeners = new ArrayList<>();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
+    public LogWindowSource(int queueLength) {
+        this.queueLength = queueLength;
+        this.buffer = new LogEntry[queueLength];
     }
 
-    public void registerListener(LogChangeListener listener)
-    {
-        synchronized (m_listeners)
-        {
-            if (!m_listeners.contains(listener)) {
-                m_listeners.add(listener);
-                m_activeListeners = null;
-            }
+    public void registerListener(LogChangeListener listener) {
+        lock.writeLock().lock();
+        try {
+            listeners.add(listener);
+            activeListeners = null;
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
-    public void unregisterListener(LogChangeListener listener)
-    {
-        synchronized (m_listeners)
-        {
-            if (m_listeners.remove(listener)) {
-                m_activeListeners = null;
-            }
+    public void unregisterListener(LogChangeListener listener) {
+        lock.writeLock().lock();
+        try {
+            listeners.remove(listener);
+            activeListeners = null;
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
-    public void append(LogLevel logLevel, String strMessage)
-    {
+    public void append(LogLevel logLevel, String strMessage) {
         LogEntry entry = new LogEntry(logLevel, strMessage);
 
-        synchronized (m_messages) {
-            if (m_messages.size() >= m_iQueueLength) {
-                m_messages.removeFirst();
+        lock.writeLock().lock();
+        try {
+            int index = (startIndex.get() + count.get()) % queueLength;
+            buffer[index] = entry;
+
+            if (count.get() < queueLength) {
+                count.incrementAndGet();
+            } else {
+                startIndex.incrementAndGet();
+                startIndex.compareAndSet(queueLength, 0);
             }
-            m_messages.addLast(entry);
+        } finally {
+            lock.writeLock().unlock();
         }
 
-        LogChangeListener[] activeListeners = m_activeListeners;
-        if (activeListeners == null)
-        {
-            synchronized (m_listeners)
-            {
-                if (m_activeListeners == null)
-                {
-                    activeListeners = m_listeners.toArray(new LogChangeListener[0]);
-                    m_activeListeners = activeListeners;
+        notifyListeners();
+    }
+
+    private void notifyListeners() {
+        LogChangeListener[] activeListeners = this.activeListeners;
+        if (activeListeners == null) {
+            synchronized (this) {
+                activeListeners = this.activeListeners;
+                if (activeListeners == null) {
+                    activeListeners = listeners.toArray(new LogChangeListener[0]);
+                    this.activeListeners = activeListeners;
                 }
             }
         }
 
-        for (LogChangeListener listener : activeListeners)
-        {
+        for (LogChangeListener listener : activeListeners) {
             listener.onLogChanged();
         }
     }
 
-    public int size()
-    {
-        synchronized (m_messages) {
-            return m_messages.size();
+    public int size() {
+        lock.readLock().lock();
+        try {
+            return count.get();
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
-    public Iterable<LogEntry> range(int startFrom, int count)
-    {
-        synchronized (m_messages) {
-            if (startFrom < 0 || startFrom >= m_messages.size()) {
-                return Collections.emptyList();
+    public Iterable<LogEntry> range(int startFrom, int count) {
+        if (startFrom < 0 || startFrom >= size()) {
+            return Collections.emptyList();
+        }
+
+        return new Iterable<LogEntry>() {
+            @Override
+            public Iterator<LogEntry> iterator() {
+                return new LogEntryIterator(startFrom, Math.min(startFrom + count, size()));
             }
-            return new ArrayList<>(m_messages).subList(startFrom, Math.min(startFrom + count, m_messages.size()));
-        }
+        };
     }
 
-    public Iterable<LogEntry> all()
-    {
-        synchronized (m_messages) {
-            return new ArrayList<>(m_messages);
+    public Iterable<LogEntry> all() {
+        return range(0, size());
+    }
+
+    private class LogEntryIterator implements Iterator<LogEntry> {
+        private final int endIndex;
+        private int currentIndex;
+
+        public LogEntryIterator(int startFrom, int endIndex) {
+            this.currentIndex = startFrom;
+            this.endIndex = endIndex;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return currentIndex < endIndex;
+        }
+        @Override
+        public LogEntry next() {
+            lock.readLock().lock();
+            try {
+                if (!hasNext()) {
+                    throw new IllegalStateException("No more elements");
+                }
+                int index = (startIndex.get() + currentIndex) % queueLength;
+                currentIndex++;
+                return buffer[index];
+            } finally {
+                lock.readLock().unlock();
+            }
         }
     }
 }
