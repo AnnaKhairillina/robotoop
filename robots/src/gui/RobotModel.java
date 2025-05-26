@@ -1,5 +1,7 @@
-package gui.RobotModel;
+package gui;
 
+
+import strategy.MovementStrategy;
 
 import java.util.Observable;
 
@@ -22,7 +24,7 @@ public class RobotModel extends Observable {
         this.robotY = startY;
     }
 
-    public void update(double deltaTime) {
+    public synchronized void update(double deltaTime) {
         if (strategy != null) {
             strategy.move(this, deltaTime);
         }
