@@ -1,5 +1,6 @@
 /bin/
 /.settings/
 *.class
-.idea/
+*.xml
 *.iml
+.idea/

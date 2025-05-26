@@ -1,9 +1,11 @@
-package gui;
+package gui.Frames;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
 
+import gui.GameVisualizer;
+import gui.RobotsManager;
 import gui.state.StatefulInternalFrame;
 
 public class GameWindow extends StatefulInternalFrame {

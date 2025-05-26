@@ -1,5 +1,7 @@
-package gui;
+package gui.Frames;
 
+import gui.RobotModel;
+import gui.RobotsManager;
 import gui.state.StatefulInternalFrame;
 import java.awt.*;
 import java.util.Observable;

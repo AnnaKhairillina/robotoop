@@ -1,4 +1,4 @@
-package gui;
+package gui.Frames;
 
 import javax.swing.*;
 import java.awt.*;
@@ -7,6 +7,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
+import gui.RobotModel;
+import gui.RobotsManager;
 import gui.state.StatefulWindow;
 import gui.state.WindowStateManager;
 import log.Logger;

@@ -1,8 +1,8 @@
 package gui.state;
 
-import gui.GameWindow;
-import gui.LogWindow;
-import gui.MainApplicationFrame;
+import gui.Frames.GameWindow;
+import gui.Frames.LogWindow;
+import gui.Frames.MainApplicationFrame;
 import log.Logger;
 import javax.swing.JInternalFrame;
 import java.io.*;
