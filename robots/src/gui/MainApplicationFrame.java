@@ -5,23 +5,31 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 import gui.state.StatefulWindow;
 import gui.state.WindowStateManager;
 import log.Logger;
+import strategy.AcceleratingStrategy;
+import strategy.StraightToTargetStrategy;
+import strategy.ZigZagStrategy;
 
 public class MainApplicationFrame extends StatefulWindow {
     private final JDesktopPane desktopPane = new JDesktopPane();
+    private final RobotsManager robotsManager = new RobotsManager();
+    private final int robotCount;
 
     public static void main(String[] args) {
         Locale.setDefault(new Locale("ru", "RU"));
         SwingUtilities.invokeLater(() -> {
-            MainApplicationFrame frame = new MainApplicationFrame();
+            int robotCount = 3;
+            MainApplicationFrame frame = new MainApplicationFrame(robotCount);
             frame.setVisible(true);
         });
     }
 
-    public MainApplicationFrame() {
+    public MainApplicationFrame(int robotCount) {
+        this.robotCount = robotCount;
         initLocalization();
         setupWindow();
         createAndAddWindows();
@@ -51,7 +59,19 @@ public class MainApplicationFrame extends StatefulWindow {
             restoreState(savedStates.get("mainWindow"));
         }
 
-        RobotModel model = new RobotModel();
+        Random rand = new Random();
+        for (int i = 0; i < robotCount; i++) {
+            switch (i % 3) {
+                case 0 -> robotsManager.addRobot(new RobotModel(new StraightToTargetStrategy(), 100, 100));
+                case 1 -> robotsManager.addRobot(new RobotModel(new AcceleratingStrategy(), 100, 100));
+                case 2 -> robotsManager.addRobot(new RobotModel(new ZigZagStrategy(), 100, 100));
+            }
+        }
+
+        robotsManager.setTargetForAll(
+                100 + rand.nextInt(500),
+                100 + rand.nextInt(300)
+        );
 
         LogWindow logWindow = createLogWindow();
         if (savedStates.containsKey("logWindow")) {
@@ -59,13 +79,13 @@ public class MainApplicationFrame extends StatefulWindow {
         }
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow(model);
+        GameWindow gameWindow = new GameWindow(robotsManager);
         if (savedStates.containsKey("gameWindow")) {
             gameWindow.restoreState(savedStates.get("gameWindow"));
         }
         addWindow(gameWindow);
 
-        CoordinatesWindow coordsWindow = new CoordinatesWindow(model);
+        CoordinatesWindow coordsWindow = new CoordinatesWindow(robotsManager);
         if (savedStates.containsKey("coordinatesWindow")) {
             coordsWindow.restoreState(savedStates.get("coordinatesWindow"));
         }
@@ -93,14 +113,15 @@ public class MainApplicationFrame extends StatefulWindow {
 
     private void confirmExit() {
         int result = JOptionPane.showConfirmDialog(
-            this,
-            "Вы уверены, что хотите выйти?",
-            "Подтверждение",
-            JOptionPane.YES_NO_OPTION
+                this,
+                "Вы уверены, что хотите выйти?",
+                "Подтверждение",
+                JOptionPane.YES_NO_OPTION
         );
 
         if (result == JOptionPane.YES_OPTION) {
-            saveWindowStates(); 
+            robotsManager.shutdown();
+            saveWindowStates();
             setVisible(false);
             dispose();
         }
