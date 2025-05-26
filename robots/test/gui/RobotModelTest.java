@@ -1,6 +1,5 @@
-package tests;
+package gui;
 
-import gui.RobotModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import strategy.AcceleratingStrategy;
